@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"io"
 	"log/slog"
 	"os"
 	"sort"
@@ -9,8 +10,9 @@ import (
 	"time"
 )
 
+var log = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 func main() {
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	start := time.Now()
 	filePath := "customers.csv"
@@ -43,6 +45,11 @@ func getEmailDomains(filePath string) (map[string]int, error) {
 	// Skip the header line.
 	_, err = reader.Read()
 	if err != nil {
+		if err != io.EOF {
+			log.Error(err.Error())
+			os.Exit(1)
+		}
+
 		return nil, err
 	}
 
@@ -50,7 +57,10 @@ func getEmailDomains(filePath string) (map[string]int, error) {
 	for {
 		record, err := reader.Read()
 		if err != nil {
-			break
+			if err == io.EOF {
+				log.Error(err.Error())
+				break
+			}
 		}
 
 		email := record[2]
