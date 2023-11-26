@@ -20,14 +20,24 @@ func LoadConfig(log Logger, envFilePath string) (*Config, error) {
 
 	concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY"))
 	if err != nil {
-		log.Error("Parsing CONCURRENCY variable.")
+		log.Error("Parsing CONCURRENCY variable failed.")
 		return nil, err
 	}
 
-	readBufferSize, err := strconv.Atoi(os.Getenv("READ_BUFFER_SIZE_IN_BYTES"))
+	if concurrency <= 0 {
+		log.Error("CONCURRENCY must be greater than 0.")
+		return nil, fmt.Errorf("invalid CONCURRENCY value: %d", concurrency)
+	}
+
+	readBufferSizeInBytes, err := strconv.Atoi(os.Getenv("READ_BUFFER_SIZE_IN_BYTES"))
 	if err != nil {
-		log.Error("Parsing READ_BUFFER_SIZE_IN_BYTES.")
+		log.Error("Parsing READ_BUFFER_SIZE_IN_BYTES failed.")
 		return nil, err
+	}
+
+	if readBufferSizeInBytes <= 0 {
+		log.Error("READ_BUFFER_SIZE_IN_BYTES must be greater than 0.")
+		return nil, fmt.Errorf("invalid READ_BUFFER_SIZE_IN_BYTES value: %d", readBufferSizeInBytes)
 	}
 
 	config := &Config{
@@ -37,7 +47,7 @@ func LoadConfig(log Logger, envFilePath string) (*Config, error) {
 		InputCSVFilePath10Lines:  os.Getenv("INPUT_CSV_FILE_PATH_10_LINES"),
 		InputCSVFilePath3kLines:  os.Getenv("INPUT_CSV_FILE_PATH_3K_LINES"),
 		InputCSVFilePath10mLines: os.Getenv("INPUT_CSV_FILE_PATH_10M_LINES"),
-		ReadBufferSizeInBytes:    readBufferSize,
+		ReadBufferSizeInBytes:    readBufferSizeInBytes,
 	}
 
 	return config, nil

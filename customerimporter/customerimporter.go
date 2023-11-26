@@ -19,24 +19,19 @@ import (
 func Run(log Logger, config *Config) error {
 	file, err := os.Open(config.InputCSVFilePathDefault)
 	if err != nil {
+		log.Warn("Error opening CSV file.", err)
 		return err
 	}
 	defer file.Close()
 
-	// Skip the header line.
 	reader, err := createCSVfileReader(log, config, file)
 	if err != nil {
 		return err
 	}
 
-	emailDomains, err := processEmailDomainsConcurrently(log, config, reader)
-	if err != nil {
-		log.Error("Processing email domains concurrently.", err)
-		return err
-	}
+	emailDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	sortedDomains := sortEmailDomains(emailDomains)
-
 	for _, domain := range sortedDomains {
 		log.Info("Sorted domain.", "domain_name", domain, "occurrences", emailDomains[domain])
 	}
@@ -47,16 +42,7 @@ func Run(log Logger, config *Config) error {
 // processEmailDomainsConcurrently processes email domains concurrently using worker goroutines.
 // It takes a logger, configuration, and a CSV reader as input, and returns a map of email domains with their occurrences.
 // The function utilizes goroutines and channels to achieve concurrent processing.
-//
-// Parameters:
-//   - log: Logger interface for logging messages.
-//   - config: Configuration containing concurrency settings.
-//   - reader: CSV reader for reading input data.
-//
-// Returns:
-//   - map[string]int: A map where keys are email domains, and values are the occurrences of each domain.
-//   - error: An error if any occurred during processing.
-func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) (map[string]int, error) {
+func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) map[string]int {
 	var (
 		emailDomains = make(map[string]int)
 		wg           sync.WaitGroup
@@ -92,7 +78,7 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 				if err == io.EOF {
 					break
 				}
-				log.Warn("Reading the file.", err)
+				log.Warn("The reader failed while reading the file.", err)
 				continue
 			}
 			tasks <- Task{record}
@@ -105,7 +91,7 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 		emailDomains[result.domain] += result.counter
 	}
 
-	return emailDomains, nil
+	return emailDomains
 }
 
 // createCSVfileReader sets and use buffered reader from bufio package. It returns a csvReader ready to be used for CSV file processing.
@@ -113,20 +99,17 @@ func createCSVfileReader(log Logger, config *Config, file *os.File) (*csv.Reader
 	reader := bufio.NewReaderSize(file, config.ReadBufferSizeInBytes)
 	csvReader := csv.NewReader(reader)
 
+	// Skip the header line.
 	_, err := csvReader.Read()
-	if err != nil {
-		if err != io.EOF {
-			log.Warn("Skipping the first line in the file", err)
-			return nil, err
-		}
-
+	if err != nil && err != io.EOF {
+		log.Warn("Skipping the first line in the file failed.", err)
 		return nil, err
 	}
 
 	return csvReader, nil
 }
 
-// parseCustomer parse record input to Customer struct for better visibility and maintability of the code.
+// parseCustomer parses record input to Customer struct for better visibility and maintability of the code.
 func parseCustomer(record []string) *Customer {
 	return &Customer{
 		FirstName: record[0],

@@ -37,10 +37,7 @@ func BenchmarkProcessEmailDomainsConcurrently(b *testing.B) {
 							b.Fatal(err)
 						}
 
-						_, err = processEmailDomainsConcurrently(log, config, reader)
-						if err != nil {
-							b.Fatal(err)
-						}
+						_ = processEmailDomainsConcurrently(log, config, reader)
 					}
 				})
 			}

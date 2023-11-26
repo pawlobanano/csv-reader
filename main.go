@@ -13,7 +13,7 @@ var log = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 func main() {
 	config, err := customerimporter.LoadConfig(log, ".env")
 	if err != nil {
-		log.Error("Loading config.", err)
+		log.Error("Loading config failed.", err)
 		return
 	}
 
@@ -21,7 +21,7 @@ func main() {
 
 	err = customerimporter.Run(log, config)
 	if err != nil {
-		log.Error("Run customerimporter package.", err)
+		log.Error("CSV import failed.", err)
 		return
 	}
 

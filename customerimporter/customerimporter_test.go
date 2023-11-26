@@ -28,10 +28,7 @@ func TestProcessEmailDomainsConcurrently(t *testing.T) {
 	}
 
 	// When
-	emaiDomains, err := processEmailDomainsConcurrently(log, config, reader)
-	if err != nil {
-		t.Fatalf("Error while getting email domains: %v", err)
-	}
+	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{
@@ -58,10 +55,7 @@ func TestEmptyInputFile(t *testing.T) {
 	reader := csv.NewReader(strings.NewReader(""))
 
 	// When
-	emaiDomains, err := processEmailDomainsConcurrently(log, config, reader)
-	if err != nil {
-		t.Fatalf("Error while getting email domains: %v", err)
-	}
+	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{}

@@ -28,6 +28,7 @@ type Task struct {
 	record []string
 }
 
+// DomainCounter is a struct made for convenience for the results channel.
 type DomainCounter struct {
 	domain  string
 	counter int
