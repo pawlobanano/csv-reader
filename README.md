@@ -24,31 +24,31 @@ CSV file reader with an e-mail's domain occurrences counter.
 
 ## Screenshots from benchmark execution
 - CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=4096
-![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-5s-concurrency-1-read-buffer-size-4096-amd-ryzen-5-7600x.png)
+![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-500ms-concurrency-1-read-buffer-size-4096-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=4096
-![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-5s-concurrency-6-read-buffer-size-4096-amd-ryzen-5-7600x.png)
+![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-500ms-concurrency-6-read-buffer-size-4096-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=4096
-![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-5s-concurrency-12-read-buffer-size-4096-amd-ryzen-5-7600x.png)
+![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=4096](/assets/benchmark-500ms-concurrency-12-read-buffer-size-4096-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=8192
-![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-5s-concurrency-1-read-buffer-size-8192-amd-ryzen-5-7600x.png)
+![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-500ms-concurrency-1-read-buffer-size-8192-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=8192
-![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-5s-concurrency-6-read-buffer-size-8192-amd-ryzen-5-7600x.png)
+![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-500ms-concurrency-6-read-buffer-size-8192-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=8192
-![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-5s-concurrency-12-read-buffer-size-8192-amd-ryzen-5-7600x.png)
+![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=8192](/assets/benchmark-500ms-concurrency-12-read-buffer-size-8192-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=16384
-![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-5s-concurrency-1-read-buffer-size-16384-amd-ryzen-5-7600x.png)
+![CONCURRENCY=1, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-500ms-concurrency-1-read-buffer-size-16384-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=16384
-![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-5s-concurrency-6-read-buffer-size-16384-amd-ryzen-5-7600x.png)
+![CONCURRENCY=6, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-500ms-concurrency-6-read-buffer-size-16384-amd-ryzen-5-7600x.png)
 
 - CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=16384
-![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-5s-concurrency-12-read-buffer-size-16384-amd-ryzen-5-7600x.png)
+![CONCURRENCY=12, READ_BUFFER_SIZE_IN_BYTES=16384](/assets/benchmark-500ms-concurrency-12-read-buffer-size-16384-amd-ryzen-5-7600x.png)
 
 ## Makefile
 - Run program
