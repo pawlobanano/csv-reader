@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -28,7 +29,7 @@ func TestProcessEmailDomainsConcurrently(t *testing.T) {
 	}
 
 	// When
-	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
+	emaiDomains, _ := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{
@@ -55,7 +56,7 @@ func TestEmptyInputFile(t *testing.T) {
 	reader := csv.NewReader(strings.NewReader(""))
 
 	// When
-	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
+	emaiDomains, _ := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{}
@@ -134,6 +135,82 @@ func TestExtractDomainWithTestCases(t *testing.T) {
 			// Then
 			if !reflect.DeepEqual(domain, tc.expectedValue) {
 				t.Errorf("Test %s failed. Expected: %v, Got: %v", tc.name, tc.expectedValue, domain)
+			}
+		})
+	}
+}
+
+func TestEmailValidation(t *testing.T) {
+	testCases := []struct {
+		name          string
+		email         string
+		expectedValue bool
+	}{
+		{
+			name:          "OK",
+			email:         "test@example.com",
+			expectedValue: true,
+		},
+		{
+			name:          "Invalid email",
+			email:         "invalid-email",
+			expectedValue: false,
+		},
+		{
+			name:          "Email missing domain",
+			email:         "missing@domain",
+			expectedValue: false,
+		},
+	}
+
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Given, When
+			isValid := emailRegex.MatchString(tc.email)
+
+			// Then
+			if isValid != tc.expectedValue {
+				t.Errorf("Test %s failed. Expected: %v, Got: %v", tc.name, tc.expectedValue, isValid)
+			}
+		})
+	}
+}
+
+func TestDomainValidation(t *testing.T) {
+	testCases := []struct {
+		name          string
+		email         string
+		expectedValue bool
+	}{
+		{
+			name:          "OK",
+			email:         "example.com",
+			expectedValue: true,
+		},
+		{
+			name:          "Invalid domain",
+			email:         "invalid-domain@com",
+			expectedValue: false,
+		},
+		{
+			name:          "Missing domain",
+			email:         "missing-tld@",
+			expectedValue: false,
+		},
+	}
+
+	domainRegex := regexp.MustCompile(`^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Given, When
+			isValid := domainRegex.MatchString(tc.email)
+
+			// Then
+			if isValid != tc.expectedValue {
+				t.Errorf("Test %s failed. Expected: %v, Got: %v", tc.name, tc.expectedValue, isValid)
 			}
 		})
 	}

@@ -8,8 +8,10 @@ package customerimporter
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -29,7 +31,10 @@ func Run(log Logger, config *Config) error {
 		return err
 	}
 
-	emailDomains := processEmailDomainsConcurrently(log, config, reader)
+	emailDomains, err := processEmailDomainsConcurrently(log, config, reader)
+	if err != nil {
+		return err
+	}
 
 	sortedDomains := sortEmailDomains(emailDomains)
 	for _, domain := range sortedDomains {
@@ -42,13 +47,18 @@ func Run(log Logger, config *Config) error {
 // processEmailDomainsConcurrently processes email domains concurrently using worker goroutines.
 // It takes a logger, configuration, and a CSV reader as input, and returns a map of email domains with their occurrences.
 // The function utilizes goroutines and channels to achieve concurrent processing.
-func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) map[string]int {
+func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) (map[string]int, error) {
 	var (
 		emailDomains = make(map[string]int)
 		wg           sync.WaitGroup
 		tasks        = make(chan Task, config.Concurrency)
 		results      = make(chan DomainCounter, config.Concurrency)
+		errors       = make(chan error, config.Concurrency)
 	)
+
+	// Regular expressions for email and domain validation.
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	domainRegex := regexp.MustCompile(`^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	// Start worker goroutines.
 	for i := 0; i < config.Concurrency; i++ {
@@ -59,15 +69,29 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 			for task := range tasks {
 				customer := parseCustomer(task.record)
 				domain := extractDomain(customer.Email)
+
+				// Validate email.
+				if !emailRegex.MatchString(customer.Email) {
+					errors <- fmt.Errorf("invalid email format: %s", customer.Email)
+					continue
+				}
+
+				// Validate domain.
+				if domain == "" || !domainRegex.MatchString(domain) {
+					errors <- fmt.Errorf("invalid domain: %s", domain)
+					continue
+				}
+
 				results <- DomainCounter{domain, 1}
 			}
 		}()
 	}
 
-	// Start a goroutine to close the results channel when all workers are done.
+	// Start a goroutine to close the results and errors channels when all workers are done.
 	go func() {
 		wg.Wait()
 		close(results)
+		close(errors)
 	}()
 
 	// Start a goroutine to feed tasks to the workers.
@@ -86,12 +110,22 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 		close(tasks)
 	}()
 
-	// Collect results from workers.
-	for result := range results {
-		emailDomains[result.domain] += result.counter
-	}
+	// Collect results and handle errors from workers.
+	for {
+		select {
+		case result, ok := <-results:
+			if !ok { // Results channel closed, no more results to process.
+				return emailDomains, nil
+			}
+			emailDomains[result.domain] += result.counter
 
-	return emailDomains
+		case err, ok := <-errors:
+			if !ok { // Errors channel closed, no more errors to process.
+				return emailDomains, nil
+			}
+			log.Warn("Error processing email domain.", err)
+		}
+	}
 }
 
 // createCSVfileReader sets and use buffered reader from bufio package. It returns a csvReader ready to be used for CSV file processing.
