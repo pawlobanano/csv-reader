@@ -31,10 +31,7 @@ func Run(log Logger, config *Config) error {
 		return err
 	}
 
-	emailDomains, err := processEmailDomainsConcurrently(log, config, reader)
-	if err != nil {
-		return err
-	}
+	emailDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	sortedDomains := sortEmailDomains(emailDomains)
 	for _, domain := range sortedDomains {
@@ -47,18 +44,16 @@ func Run(log Logger, config *Config) error {
 // processEmailDomainsConcurrently processes email domains concurrently using worker goroutines.
 // It takes a logger, configuration, and a CSV reader as input, and returns a map of email domains with their occurrences.
 // The function utilizes goroutines and channels to achieve concurrent processing.
-func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) (map[string]int, error) {
+func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Reader) map[string]int {
 	var (
 		emailDomains = make(map[string]int)
+		emailRegex   = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+		domainRegex  = regexp.MustCompile(`^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 		wg           sync.WaitGroup
 		tasks        = make(chan Task, config.Concurrency)
 		results      = make(chan DomainCounter, config.Concurrency)
 		errors       = make(chan error, config.Concurrency)
 	)
-
-	// Regular expressions for email and domain validation.
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-	domainRegex := regexp.MustCompile(`^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	// Start worker goroutines.
 	for i := 0; i < config.Concurrency; i++ {
@@ -105,8 +100,10 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 				log.Warn("The reader failed while reading the file.", err)
 				continue
 			}
+
 			tasks <- Task{record}
 		}
+
 		close(tasks)
 	}()
 
@@ -115,13 +112,13 @@ func processEmailDomainsConcurrently(log Logger, config *Config, reader *csv.Rea
 		select {
 		case result, ok := <-results:
 			if !ok { // Results channel closed, no more results to process.
-				return emailDomains, nil
+				return emailDomains
 			}
 			emailDomains[result.domain] += result.counter
 
 		case err, ok := <-errors:
 			if !ok { // Errors channel closed, no more errors to process.
-				return emailDomains, nil
+				return emailDomains
 			}
 			log.Warn("Error processing email domain.", err)
 		}

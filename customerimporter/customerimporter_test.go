@@ -29,7 +29,7 @@ func TestProcessEmailDomainsConcurrently(t *testing.T) {
 	}
 
 	// When
-	emaiDomains, _ := processEmailDomainsConcurrently(log, config, reader)
+	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{
@@ -56,7 +56,7 @@ func TestEmptyInputFile(t *testing.T) {
 	reader := csv.NewReader(strings.NewReader(""))
 
 	// When
-	emaiDomains, _ := processEmailDomainsConcurrently(log, config, reader)
+	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{}
