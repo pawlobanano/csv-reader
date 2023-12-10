@@ -29,7 +29,7 @@ func TestProcessEmailDomainsConcurrently(t *testing.T) {
 	}
 
 	// When
-	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
+	emailDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{
@@ -41,8 +41,8 @@ func TestProcessEmailDomainsConcurrently(t *testing.T) {
 		"statcounter.com": 1,
 	}
 
-	if !reflect.DeepEqual(emaiDomains, expectedEmailDomains) {
-		t.Errorf("Unexpected email domains. Expected: %v, Got: %v", expectedEmailDomains, emaiDomains)
+	if !reflect.DeepEqual(emailDomains, expectedEmailDomains) {
+		t.Errorf("Unexpected email domains. Expected: %v, Got: %v", expectedEmailDomains, emailDomains)
 	}
 }
 
@@ -56,13 +56,13 @@ func TestEmptyInputFile(t *testing.T) {
 	reader := csv.NewReader(strings.NewReader(""))
 
 	// When
-	emaiDomains := processEmailDomainsConcurrently(log, config, reader)
+	emailDomains := processEmailDomainsConcurrently(log, config, reader)
 
 	// Then
 	expectedEmailDomains := map[string]int{}
 
-	if !reflect.DeepEqual(emaiDomains, expectedEmailDomains) {
-		t.Errorf("Unexpected email domains. Expected: %v, Got: %v", expectedEmailDomains, emaiDomains)
+	if !reflect.DeepEqual(emailDomains, expectedEmailDomains) {
+		t.Errorf("Unexpected email domains. Expected: %v, Got: %v", expectedEmailDomains, emailDomains)
 	}
 }
 
