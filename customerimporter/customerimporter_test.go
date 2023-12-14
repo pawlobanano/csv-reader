@@ -2,6 +2,7 @@ package customerimporter
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"reflect"
 	"regexp"
@@ -221,14 +222,17 @@ func NewMockLogger() *MockLogger {
 	return &MockLogger{}
 }
 
+// Info simulates logging an info message.
 func (m *MockLogger) Info(msg string, keyVals ...interface{}) {
-	m.InfoCalled = true
+	m.Logs = append(m.Logs, fmt.Sprintf("INFO: %s", msg))
 }
 
+// Warn simulates logging a warning message.
 func (m *MockLogger) Warn(msg string, keyVals ...interface{}) {
-	m.WarnCalled = true
+	m.Logs = append(m.Logs, fmt.Sprintf("WARN: %s", msg))
 }
 
+// Error simulates logging an error message.
 func (m *MockLogger) Error(msg string, keyVals ...interface{}) {
-	m.ErrorCalled = true
+	m.Logs = append(m.Logs, fmt.Sprintf("ERROR: %s", msg))
 }

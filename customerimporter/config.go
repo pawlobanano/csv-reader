@@ -6,12 +6,13 @@ import (
 	"path/filepath"
 	"strconv"
 
+	log "log/slog"
+
 	"github.com/joho/godotenv"
 )
 
 // LoadConfig loads the configuration from the .env file.
 func LoadConfig(log Logger, envFilePath string) (*Config, error) {
-
 	err := Load(envFilePath)
 	if err != nil {
 		log.Error("Loading .env file.", err)
@@ -21,23 +22,19 @@ func LoadConfig(log Logger, envFilePath string) (*Config, error) {
 	concurrency, err := strconv.Atoi(os.Getenv("CONCURRENCY"))
 	if err != nil {
 		log.Error("Parsing CONCURRENCY variable failed.")
-		return nil, err
 	}
 
 	if concurrency <= 0 {
-		log.Error("CONCURRENCY must be greater than 0.")
-		return nil, fmt.Errorf("invalid CONCURRENCY value: %d", concurrency)
+		log.Error(fmt.Sprintf("%s %d", "CONCURRENCY must be greater than 0. But was", concurrency))
 	}
 
 	readBufferSizeInBytes, err := strconv.Atoi(os.Getenv("READ_BUFFER_SIZE_IN_BYTES"))
 	if err != nil {
 		log.Error("Parsing READ_BUFFER_SIZE_IN_BYTES failed.")
-		return nil, err
 	}
 
 	if readBufferSizeInBytes <= 0 {
-		log.Error("READ_BUFFER_SIZE_IN_BYTES must be greater than 0.")
-		return nil, fmt.Errorf("invalid READ_BUFFER_SIZE_IN_BYTES value: %d", readBufferSizeInBytes)
+		log.Error(fmt.Sprintf("%s %d", "READ_BUFFER_SIZE_IN_BYTES must be greater than 0. But was", readBufferSizeInBytes))
 	}
 
 	config := &Config{
@@ -53,10 +50,32 @@ func LoadConfig(log Logger, envFilePath string) (*Config, error) {
 	return config, nil
 }
 
+// LoadConfigTest loads the configuration from the .env file for tests
+func LoadConfigTest(log Logger, envFilePath string) (*Config, error) {
+	config, err := LoadConfig(log, envFilePath)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+
+	config = &Config{
+		Concurrency:              config.Concurrency,
+		InputCSVFilePathDefault:  config.InputCSVFilePath10Lines,
+		InputCSVFilePath0Lines:   config.InputCSVFilePath0Lines,
+		InputCSVFilePath10Lines:  config.InputCSVFilePath10Lines,
+		InputCSVFilePath3kLines:  config.InputCSVFilePath3kLines,
+		InputCSVFilePath10mLines: config.InputCSVFilePath10mLines,
+		ReadBufferSizeInBytes:    config.ReadBufferSizeInBytes,
+	}
+
+	return config, nil
+}
+
 // Load loads the environment variables from the .env file.
 func Load(envFile string) error { // Solution to differentiate .env file path for unit or benchmark tests; source: https://github.com/joho/godotenv/issues/126#issuecomment-1474645022
 	err := godotenv.Load(dir(envFile))
 	if err != nil {
+		log.Error(err.Error())
 		return err
 	}
 	return nil

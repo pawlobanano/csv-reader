@@ -11,16 +11,14 @@ type Customer struct {
 
 // Logger is an interface representing the required logging methods.
 type Logger interface {
-	Info(msg string, keyvals ...interface{})
-	Warn(msg string, keyvals ...interface{})
-	Error(msg string, keyvals ...interface{})
+	Info(msg string, keyVals ...interface{})
+	Warn(msg string, keyVals ...interface{})
+	Error(msg string, keyVals ...interface{})
 }
 
-// MockLogger is a mock implementation of the slog.Logger interface for testing.
+// MockLogger is a mock implementation of the Logger interface.
 type MockLogger struct {
-	InfoCalled  bool
-	WarnCalled  bool
-	ErrorCalled bool
+	Logs []string
 }
 
 // Task is a struct of CSV file records (size of this slice depends of the reader's buffer).
